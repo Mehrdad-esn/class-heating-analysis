@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="تحلیل علمی گرمایش کلاس با 40 دانشجو" />
+    <meta name="keywords" content="گرمایش کلاس, فیزیک عمومی, تحلیل علمی" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تحلیل علمی گرمایش کلاس با ۴۰ دانشجو</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Vazirmatn", "Orbitron", sans-serif;
+      }
+      body {
+        background: #0d0d0d;
+        color: #f0f0f0;
+        overflow-x: hidden;
+        position: relative;
+        height: 100vh;
+      }
+
+      .background-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          circle at center,
+          #1a1a1a,
+          #2c2c2c,
+          #ff6b6b,
+          #4ecdc4
+        );
+        animation: gradientPulse 15s ease infinite;
+        z-index: -1;
+        opacity: 0.6;
+      }
+      @keyframes gradientPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.6;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.8;
+        }
+      }
+
+      .slides-container {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        perspective: 1200px;
+      }
+      .slide {
+        width: 90%;
+        height: 90%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotateY(20deg) scale(0.9);
+        padding: 50px;
+        opacity: 0;
+        background: rgba(20, 20, 20, 0.95);
+        border-radius: 30px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8),
+          inset 0 0 15px rgba(255, 107, 107, 0.2);
+        overflow-y: auto;
+        pointer-events: none;
+        transition: all 0.6s ease-out;
+      }
+      .slide.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) rotateY(0deg) scale(1);
+      }
+
+      h1 {
+        font-size: 4em;
+        color: #ff6b6b;
+        text-shadow: 0 0 25px rgba(255, 107, 107, 0.7),
+          0 0 50px rgba(78, 205, 196, 0.5);
+        margin-bottom: 2.5rem;
+        font-weight: 700;
+        font-family: "Orbitron", sans-serif;
+      }
+      h2 {
+        font-size: 3em;
+        color: #4ecdc4;
+        margin: 40px 0;
+        font-weight: 400;
+        text-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+      }
+      h3,
+      h4,
+      h5 {
+        color: #ff6b6b;
+        margin: 20px 0;
+        font-family: "Orbitron", sans-serif;
+      }
+      ul {
+        padding-right: 50px;
+      }
+      li {
+        font-size: 1.6em;
+        margin: 35px 0;
+        line-height: 2;
+        position: relative;
+        color: #d0d0d0;
+      }
+      li::before {
+        content: "►";
+        color: #ff6b6b;
+        font-size: 1.5em;
+        position: absolute;
+        right: -40px;
+        top: 5px;
+      }
+      .formula {
+        background: rgba(78, 205, 196, 0.1);
+        padding: 40px;
+        border-radius: 20px;
+        border: 2px solid #4ecdc4;
+        margin: 40px 0;
+        font-size: 1.5em;
+        text-align: center;
+        font-family: "Courier New", monospace;
+        box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .formula:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 30px rgba(78, 205, 196, 0.6);
+      }
+      .formula .formula-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(20, 20, 20, 0.9);
+        color: #4ecdc4;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 1em;
+        margin-bottom: 15px;
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+        white-space: nowrap;
+      }
+      .formula:hover .formula-tooltip {
+        opacity: 1;
+        visibility: visible;
+      }
+      .formula .formula-tooltip::before {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 8px;
+        border-style: solid;
+        border-color: rgba(20, 20, 20, 0.9) transparent transparent transparent;
+      }
+
+      .reference {
+        color: #ff6b6b;
+        font-size: 1.2em;
+        border-right: 4px solid #ff6b6b;
+        padding-right: 25px;
+        margin: 20px 0;
+      }
+      .slide li strong {
+        color: #ff6b6b;
+        transition: color 0.3s, text-shadow 0.3s;
+      }
+      .slide li strong:hover {
+        color: #fff;
+        text-shadow: 0 0 15px #ff6b6b;
+      }
+
+      .slide table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 30px 0;
+      }
+      .slide th,
+      .slide td {
+        padding: 15px;
+        border: 2px solid #4ecdc4;
+        text-align: center;
+        color: #d0d0d0;
+      }
+      .slide th {
+        background: rgba(78, 205, 196, 0.1);
+        color: #4ecdc4;
+      }
+
+      .nav-buttons {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 25px;
+        z-index: 1000;
+      }
+      .nav-btn {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        transition: transform 0.3s, box-shadow 0.3s;
+        font-size: 1.5em;
+        color: #fff;
+      }
+      .nav-btn:hover {
+        transform: scale(1.15) rotate(10deg);
+        box-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+      }
+
+      nav.top-nav {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 20px;
+        z-index: 1000;
+      }
+      nav.top-nav a {
+        color: #ff6b6b;
+        text-decoration: none;
+        font-size: 1.4em;
+        padding: 10px 20px;
+        background: rgba(255, 107, 107, 0.1);
+        border-radius: 25px;
+        transition: all 0.3s;
+      }
+      nav.top-nav a:hover {
+        color: #4ecdc4;
+        background: rgba(78, 205, 196, 0.2);
+        box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+      }
+
+      .animate-content {
+        position: relative;
+        padding: 20px;
+      }
+      .parallax-item {
+        transition: transform 0.5s ease-out;
+        font-size: 1.4em;
+        line-height: 1.8;
+      }
+
+      .tool-container {
+        margin: 25px;
+        padding: 25px;
+        background: rgba(255, 107, 107, 0.05);
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
+        transition: transform 0.3s;
+      }
+      .tool-container:hover {
+        transform: translateY(-5px);
+      }
+      .tool-container input,
+      .tool-container button {
+        margin: 10px;
+        padding: 12px;
+        border: 2px solid #4ecdc4;
+        border-radius: 10px;
+        background: rgba(78, 205, 196, 0.1);
+        color: #f0f0f0;
+        transition: all 0.3s;
+      }
+      .tool-container button {
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        border: none;
+        cursor: pointer;
+      }
+      .tool-container button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(78, 205, 196, 0.7);
+      }
+      .tool-container textarea {
+        margin: 10px;
+        padding: 12px;
+        border: 2px solid #4ecdc4;
+        border-radius: 10px;
+        background: rgba(78, 205, 196, 0.1);
+        color: #f0f0f0;
+        width: 100%;
+      }
+      .tool-container canvas {
+        border: 2px solid #4ecdc4;
+        border-radius: 10px;
+        background: rgba(20, 20, 20, 0.9);
+      }
+
+      @media (max-width: 768px) {
+        .slide {
+          width: 95%;
+          height: 95%;
+          padding: 20px;
+        }
+        h1 {
+          font-size: 2.8em;
+        }
+        h2 {
+          font-size: 2.2em;
+        }
+        .nav-btn {
+          width: 50px;
+          height: 50px;
+        }
+        .tool-container {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-gradient"></div>
+    <nav class="top-nav">
+      <a href="#" onclick="showSlide(0)">صفحه اصلی</a>
+      <a href="#" onclick="showSlide(1)">پاسخ مستقیم</a>
+      <a href="#" onclick="showSlide(4)">گزارش کامل</a>
+      <a href="#" onclick="showSlide(slides.length - 1)">ارجاعات</a>
+    </nav>
+    <div class="slides-container">
+      <div class="slide active">
+        <h1>تحلیل علمی گرمایش کلاس با ۴۰ دانشجو</h1>
+        <div class="animate-content">
+          <h2>فیزیک عمومی یک</h2>
+          <p class="parallax-item" style="font-size: 1.3em">
+            بررسی امکان گرمایش کلاس توسط ۴۰ دانشجو در یک روز سرد با هیتر خراب
+          </p>
+          <canvas
+            id="temperatureChart"
+            style="max-height: 300px; margin-top: 20px"
+          ></canvas>
+          <div class="tool-container">
+            <h3>ماشین‌حساب گرمایش کلاس</h3>
+            <label
+              >دمای اولیه (°C):
+              <input type="number" id="initialTemp" value="5" /></label
+            ><br />
+            <label
+              >تعداد دانشجویان:
+              <input type="number" id="students" value="40" /></label
+            ><br />
+            <button onclick="calculateHeatingTime()">محاسبه زمان</button>
+            <p id="result"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>پاسخ مستقیم</h2>
+        <div class="animate-content">
+          <ul>
+            <li>
+              <strong>40 دانشجو</strong> می‌توانند کلاس را گرم کنند و حدود
+              <strong>47 دقیقه</strong> طول می‌کشد تا دمای کلاس از
+              <strong>5 درجه سانتی‌گراد</strong> به
+              <strong>20 درجه سانتی‌گراد</strong> برسد.
+            </li>
+            <li>
+              اگر دمای اولیه <strong>0 درجه سانتی‌گراد</strong> باشد، این زمان
+              به حدود <strong>1 ساعت</strong> افزایش می‌یابد.
+            </li>
+            <li>
+              نکته جالب: گرمای بدن دانشجویان (<strong>4000 وات</strong>) بسیار
+              بیشتر از گرمای مورد نیاز برای حفظ دمای راحت کلاس (<strong
+                >1454 وات</strong
+              >) است.
+            </li>
+          </ul>
+          <div class="tool-container" id="tempSimulation">
+            <h3>شبیه‌ساز افزایش دما</h3>
+            <label
+              >دمای اولیه (°C):
+              <input type="number" id="simInitialTemp" value="5" /></label
+            ><br />
+            <button onclick="startRealtimeSimulation()">شروع شبیه‌سازی</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>توضیحات کلی</h2>
+        <div class="animate-content">
+          <ul>
+            <li>
+              کلاس با ابعاد <strong>2 متر</strong> در <strong>3 متر</strong> در
+              <strong>4 متر</strong> (حجم <strong>24 متر مکعب</strong>) در نظر
+              گرفته شده است.
+            </li>
+            <li>
+              هر دانشجو به طور متوسط <strong>100 وات</strong> گرما تولید می‌کند،
+              بنابراین <strong>40 دانشجو</strong> <strong>4000 وات</strong> گرما
+              تولید می‌کنند.
+            </li>
+            <li>
+              این مقدار کافی است تا دمای کلاس را از دمای سرد (مثلاً
+              <strong>5</strong> یا <strong>0 درجه سانتی‌گراد</strong>) به دمای
+              راحت <strong>20 درجه سانتی‌گراد</strong> برساند。
+            </li>
+            <li>
+              زمان لازم برای گرم شدن کلاس بستگی به
+              <strong>ظرفیت حرارتی</strong> کلاس و میزان
+              <strong>اتلاف حرارت</strong> دارد。
+            </li>
+          </ul>
+          <div class="tool-container" id="room3D"></div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>محاسبات ساده</h2>
+        <div class="animate-content">
+          <ul>
+            <li>
+              برای حفظ دمای <strong>20 درجه سانتی‌گراد</strong>، یک هیتر مناسب
+              حدود <strong>1454 وات</strong> قدرت نیاز دارد。
+            </li>
+            <li>
+              با توجه به گرمای زیاد دانشجویان، آنها می‌توانند کلاس را سریع‌تر از
+              یک هیتر استاندارد گرم کنند。
+            </li>
+            <li>
+              زمان دقیق بستگی به دمای اولیه دارد: اگر کلاس از
+              <strong>5 درجه</strong> شروع کند، <strong>47 دقیقه</strong> طول
+              می‌کشد، و اگر از <strong>0 درجه</strong> شروع کند، حدود
+              <strong>1 ساعت</strong>。
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h3>مقدمه</h3>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            در این مقاله، بررسی می‌کنیم که آیا
+            <strong>40 دانشجو</strong> می‌توانند یک کلاس درس با ابعاد
+            <strong>2 متر</strong> در <strong>3 متر</strong> در
+            <strong>4 متر</strong> را در یک روز سرد، زمانی که هیتر آن خراب است،
+            گرم کنند یا خیر. هدف، محاسبه <strong>انرژی</strong> مورد نیاز، توضیح
+            روش محاسبه، و مقایسه با یک هیتر مناسب است. این تحلیل برای درس
+            <strong>فیزیک عمومی یک</strong> در مقطع
+            <strong>کارشناسی</strong> طراحی شده و تمام ابعاد و نظریه‌ها، از جمله
+            <strong>اتلاف حرارت</strong>، در نظر گرفته شده است。
+          </p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>تعریف مسئله</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            کلاس دارای حجم <strong>24 متر مکعب</strong> است (<strong
+              >2 × 3 × 4 = 24</strong
+            >). فرض می‌کنیم دمای خارج از کلاس
+            <strong>0 درجه سانتی‌گراد</strong> است و هدف، رساندن دمای داخل کلاس
+            به <strong>20 درجه سانتی‌گراد</strong> است. هر دانشجو به طور متوسط
+            <strong>100 وات</strong> گرما تولید می‌کند، بنابراین
+            <strong>40 دانشجو</strong> <strong>4000 وات</strong> گرما تولید
+            می‌کنند. باید بررسی کنیم که آیا این مقدار کافی است و چه مدت طول
+            می‌کشد تا کلاس گرم شود。
+          </p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>محاسبه ظرفیت حرارتی اتاق</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            <strong>ظرفیت حرارتی</strong> (<strong>C</strong>) مقدار
+            <strong>انرژی</strong> مورد نیاز برای افزایش دمای اتاق به میزان
+            <strong>1 درجه سانتی‌گراد</strong> است. این شامل
+            <strong>ظرفیت حرارتی هوا</strong> و
+            <strong>مواد ساختمانی</strong> (دیوارها، کف و سقف) است。
+          </p>
+          <h5>ظرفیت حرارتی هوا</h5>
+          <ul>
+            <li>
+              چگالی هوا (<strong>ρ</strong>) ≈
+              <strong>1.2 کیلوگرم بر متر مکعب</strong>
+            </li>
+            <li>
+              <strong>ظرفیت حرارتی ویژه هوا</strong> (<strong>c_p</strong>) ≈
+              <strong>1005 ژول بر کیلوگرم درجه سانتی‌گراد</strong>
+            </li>
+            <li>
+              جرم هوا = <strong>ρ</strong> × حجم =
+              <strong>1.2 × 24 ≈ 28.8 کیلوگرم</strong>
+            </li>
+            <li>
+              <strong>ظرفیت حرارتی هوا</strong> (<strong>C_air</strong>) =
+              <strong>28.8 × 1005 ≈ 28,944 ژول بر درجه سانتی‌گراد</strong>
+            </li>
+          </ul>
+          <h5>ظرفیت حرارتی دیوارها، کف و سقف</h5>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            فرض می‌کنیم دیوارها از <strong>بتن</strong> با ضخامت
+            <strong>0.2 متر</strong>، چگالی
+            <strong>2400 کیلوگرم بر متر مکعب</strong>، و
+            <strong>ظرفیت حرارتی ویژه</strong>
+            <strong>800 ژول بر کیلوگرم درجه سانتی‌گراد</strong> ساخته شده‌اند。
+          </p>
+          <ul>
+            <li>
+              مساحت دیوارها:
+              <ul>
+                <li>
+                  دو دیوار <strong>2 × 4 متر</strong> =
+                  <strong>8 متر مربع</strong> هر کدام، مجموعاً
+                  <strong>16 متر مربع</strong>
+                </li>
+                <li>
+                  دو دیوار <strong>3 × 4 متر</strong> =
+                  <strong>12 متر مربع</strong> هر کدام، مجموعاً
+                  <strong>24 متر مربع</strong>
+                </li>
+                <li>کل مساحت دیوارها = <strong>40 متر مربع</strong></li>
+              </ul>
+            </li>
+            <li>
+              حجم هر دیوار <strong>2 × 4 متر</strong>:
+              <strong>8 × 0.2 = 1.6 متر مکعب</strong>، جرم =
+              <strong>1.6 × 2400 = 3840 کیلوگرم</strong>، ظرفیت حرارتی =
+              <strong>3840 × 800 = 3,072,000 ژول بر درجه سانتی‌گراد</strong>،
+              برای دو دیوار = <strong>6,144,000 ژول بر درجه سانتی‌گراد</strong>
+            </li>
+            <li>
+              حجم هر دیوار <strong>3 × 4 متر</strong>:
+              <strong>12 × 0.2 = 2.4 متر مکعب</strong>، جرم =
+              <strong>2.4 × 2400 = 5760 کیلوگرم</strong>، ظرفیت حرارتی =
+              <strong>5760 × 800 = 4,608,000 ژول بر درجه سانتی‌گراد</strong>،
+              برای دو دیوار = <strong>9,216,000 ژول بر درجه سانتی‌گراد</strong>
+            </li>
+            <li>
+              کل <strong>ظرفیت حرارتی دیوارها</strong> =
+              <strong>15,360,000 ژول بر درجه سانتی‌گراد</strong>
+            </li>
+          </ul>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            کف و سقف: هر کدام <strong>2 × 3 متر</strong> (<strong
+              >6 متر مربع</strong
+            >)، فرض ضخامت <strong>0.1 متر</strong>:
+          </p>
+          <ul>
+            <li>
+              حجم = <strong>6 × 0.1 = 0.6 متر مکعب</strong>، جرم =
+              <strong>0.6 × 2400 = 1440 کیلوگرم</strong>، ظرفیت حرارتی =
+              <strong>1440 × 800 = 1,152,000 ژول بر درجه سانتی‌گراد</strong>،
+              برای کف و سقف =
+              <strong>2 × 1,152,000 = 2,304,000 ژول بر درجه سانتی‌گراد</strong>
+            </li>
+          </ul>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            کل <strong>ظرفیت حرارتی</strong> اگر کل جرم را در نظر بگیریم:
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              C<sub>total</sub> = ظرفیت حرارتی کل, C<sub>air</sub> = ظرفیت
+              حرارتی هوا, C<sub>walls</sub> = ظرفیت حرارتی دیوارها
+            </span>
+            \( C_{\text{total}} ≈ 28,944 + 15,360,000 + 2,304,000 ≈ 17,693,944
+            \text{ ژول بر درجه سانتی‌گراد} \)
+          </div>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            با این حال، برای تغییرات دمایی کوتاه‌مدت،
+            <strong>ظرفیت حرارتی مؤثر</strong> کمتر است، زیرا دیوارها به طور
+            یکنواخت گرم نمی‌شوند. بر اساس محاسبات،
+            <strong>ظرفیت حرارتی مؤثر</strong> حدود
+            <strong>579,200 ژول بر درجه سانتی‌گراد</strong> فرض شد، که برای زمان
+            گرم شدن حدود <strong>1 ساعت</strong> منطقی است。
+          </p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>محاسبه ضریب انتقال حرارت (H)</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            <strong>ضریب انتقال حرارت</strong> (<strong>H</strong>) نرخ
+            <strong>اتلاف حرارت</strong> از اتاق به خارج بر حسب اختلاف دما است.
+            از محاسبات طراحی حرارت، قدرت مورد نیاز برای حفظ دمای
+            <strong>20 درجه سانتی‌گراد</strong> <strong>1454.4 وات</strong> است:
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              Q<sub>required</sub> = توان حرارتی مورد نیاز, H = ضریب انتقال
+              حرارت, T<sub>room</sub> = دمای اتاق, T<sub>out</sub> = دمای بیرون
+            </span>
+            \( Q_{\text{required}} = H × (T_{\text{room}} - T_{\text{out}}) \)
+          </div>
+          <div class="formula">
+            <span class="formula-tooltip">
+              Q<sub>required</sub> = توان حرارتی مورد نیاز
+            </span>
+            \( 1454.4 = H × 20 \)
+          </div>
+          <div class="formula">
+            <span class="formula-tooltip"> H = ضریب انتقال حرارت </span>
+            \( H ≈ 72.72 \text{ وات بر درجه سانتی‌گراد} \)
+          </div>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            این شامل <strong>اتلاف حرارت</strong> از طریق
+            <strong>هدایت</strong> (با ضریب
+            <strong>U ≈ 1 وات بر متر مربع درجه سانتی‌گراد</strong> برای
+            <strong>52 متر مربع</strong> سطح) و <strong>نفوذ هوا</strong> (نرخ
+            تغییر هوا حدود <strong>2.6 در ساعت</strong>) است۔
+          </p>
+          <div class="tool-container">
+            <h3>تنظیم پارامترها</h3>
+            <label
+              >ضریب انتقال حرارت (H):
+              <input
+                type="range"
+                id="H"
+                min="50"
+                max="100"
+                value="72.72" /></label
+            ><br />
+            <label
+              >ظرفیت حرارتی (C):
+              <input
+                type="range"
+                id="C"
+                min="500000"
+                max="600000"
+                value="579200" /></label
+            ><br />
+            <button onclick="updateParams()">به‌روزرسانی</button>
+            <p id="paramResult"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>مدل‌سازی تغییر دما</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            تغییر دمای اتاق با <strong>معادله دیفرانسیل</strong> زیر مدل می‌شود:
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              dT/dt = نرخ تغییر دما در زمان, Q<sub>in</sub> = گرمای ورودی, H =
+              ضریب انتقال حرارت, T = دمای اتاق در زمان t, T<sub>out</sub> = دمای
+              بیرون, C = ظرفیت حرارتی
+            </span>
+            \[ \frac{dT}{dt} = \frac{Q_{\text{in}} - H(T - T_{\text{out}})}{C}
+            \]
+          </div>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            که <strong>Q_in = 4000 وات</strong>،
+            <strong>H = 72.72 وات بر درجه سانتی‌گراد</strong>، و
+            <strong>C ≈ 579,200 ژول بر درجه سانتی‌گراد</strong> است. راه‌حل
+            عمومی:
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              T(t) = دمای اتاق در زمان t, Q<sub>in</sub> = گرمای ورودی, H = ضریب
+              انتقال حرارت, T<sub>initial</sub> = دمای اولیه, C = ظرفیت حرارتی,
+              t = زمان
+            </span>
+            \[ T(t) = \frac{Q_{\text{in}}}{H} + \left( T_{\text{initial}} -
+            \frac{Q_{\text{in}}}{H} \right) e^{-\frac{H}{C}t} \]
+          </div>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            با <strong>T_out = 0 درجه سانتی‌گراد</strong>:
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              T(t) = دمای اتاق در زمان t, Q<sub>in</sub> = گرمای ورودی, H = ضریب
+              انتقال حرارت, T<sub>initial</sub> = دمای اولیه, C = ظرفیت حرارتی,
+              t = زمان
+            </span>
+            \[ T(t) = \frac{4000}{72.72} + \left( T_{\text{initial}} -
+            \frac{4000}{72.72} \right) e^{-\frac{72.72}{579,200}t} \]
+          </div>
+          <div class="formula">
+            <span class="formula-tooltip">
+              Q<sub>in</sub> = گرمای ورودی, H = ضریب انتقال حرارت
+            </span>
+            \[ \frac{4000}{72.72} ≈ 54.98 \text{ درجه سانتی‌گراد} \]
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>زمان لازم برای رسیدن به 20 درجه سانتی‌گراد</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            فرض می‌کنیم دمای اولیه
+            <strong>T_initial = 5 درجه سانتی‌گراد</strong> (واقع‌بینانه‌تر از
+            <strong>0 درجه</strong>):
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              T<sub>initial</sub> = دمای اولیه, t = زمان
+            </span>
+            \[ 20 = 54.98 + (5 - 54.98) e^{-\frac{72.72}{579,200}t} \]
+          </div>
+          <div class="formula">
+            <span class="formula-tooltip"> T = دمای اتاق در زمان t </span>
+            \[ 20 = 54.98 - 49.98 e^{-\frac{72.72}{579,200}t} \]
+          </div>
+          <div class="formula">
+            \[ -34.98 = -49.98 e^{-\frac{72.72}{579,200}t} \]
+          </div>
+          <div class="formula">\[ e^{-\frac{72.72}{579,200}t} ≈ 0.7 \]</div>
+          <div class="formula">
+            <span class="formula-tooltip"> t = زمان </span>
+            \[ t ≈ \frac{0.3567 × 579,200}{72.72} ≈ 2843 \text{ ثانیه} ≈ 47.4
+            \text{ دقیقه} \]
+          </div>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            اگر <strong>T_initial = 0 درجه</strong> باشد:
+          </p>
+          <div class="formula">
+            <span class="formula-tooltip">
+              T<sub>initial</sub> = دمای اولیه, t = زمان
+            </span>
+            \[ 20 = 54.98 - 54.98 e^{-\frac{72.72}{579,200}t} \]
+          </div>
+          <div class="formula">
+            \[ -34.98 = -54.98 e^{-\frac{72.72}{579,200}t} \]
+          </div>
+          <div class="formula">\[ e^{-\frac{72.72}{579,200}t} ≈ 0.6363 \]</div>
+          <div class="formula">
+            <span class="formula-tooltip"> t = زمان </span>
+            \[ t ≈ 3600 \text{ ثانیه} ≈ 1 \text{ ساعت} \]
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>مقایسه با هیتر مناسب</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            یک هیتر مناسب باید <strong>1454.4 وات</strong> قدرت داشته باشد تا
+            دمای <strong>20 درجه</strong> را حفظ کند. گرمای
+            <strong>4000 وات</strong> دانشجویان بسیار بیشتر است، بنابراین آنها
+            می‌توانند کلاس را سریع‌تر گرم کنند و دمای بالاتری حفظ کنند。
+          </p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>نتیجه‌گیری</h4>
+          <p class="parallax-item" style="font-size: 1.4em; line-height: 1.8">
+            بله، <strong>40 دانشجو</strong> می‌توانند کلاس را گرم کنند. با دمای
+            اولیه <strong>5 درجه</strong>، حدود <strong>47 دقیقه</strong> طول
+            می‌کشد تا به <strong>20 درجه</strong> برسد، و با دمای اولیه
+            <strong>0 درجه</strong>، حدود <strong>1 ساعت</strong>. گرمای بدن
+            دانشجویان (<strong>4000 وات</strong>) بسیار بیشتر از نیاز کلاس
+            (<strong>1454 وات</strong>) است، که نشان‌دهنده ظرفیت بالای آنها برای
+            گرم کردن کلاس است。
+          </p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>گزارش کامل</h2>
+        <div class="animate-content">
+          <h4>جدول خلاصه</h4>
+          <div style="overflow-x: auto">
+            <table
+              style="width: 100%; border-collapse: collapse; margin: 30px 0"
+            >
+              <tr style="background: rgba(78, 205, 196, 0.1)">
+                <th>پارامتر</th>
+                <th>مقدار</th>
+              </tr>
+              <tr>
+                <td>حجم کلاس</td>
+                <td>24 متر مکعب</td>
+              </tr>
+              <tr>
+                <td>ظرفیت حرارتی مؤثر (C)</td>
+                <td>579,200 ژول بر درجه سانتی‌گراد</td>
+              </tr>
+              <tr>
+                <td>ضریب انتقال حرارت (H)</td>
+                <td>72.72 وات بر درجه سانتی‌گراد</td>
+              </tr>
+              <tr>
+                <td>گرمای دانشجویان (Q_in)</td>
+                <td>4000 وات</td>
+              </tr>
+              <tr>
+                <td>زمان برای T_initial = 5°C</td>
+                <td>47 دقیقه</td>
+              </tr>
+              <tr>
+                <td>زمان برای T_initial = 0°C</td>
+                <td>1 ساعت</td>
+              </tr>
+              <tr>
+                <td>قدرت هیتر مناسب</td>
+                <td>1454.4 وات</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <h2>ارجاعات کلیدی</h2>
+        <div class="animate-content">
+          <ul>
+            <li class="reference">
+              Specific Heat Calculator -
+              <a href="https://www.omnicalculator.com/physics/specific-heat"
+                >محاسبه گر ظرفیت حرارتی ویژه</a
+              >
+            </li>
+            <li class="reference">
+              Room Heat Calculator -
+              <a href="https://www.heatdesign.ie/calculator/"
+                >محاسبه گر حرارت اتاق</a
+              >
+            </li>
+            <li class="reference">
+              How to calculate the amount of heat in my room -
+              <a
+                href="https://www.quora.com/How-do-I-calculate-the-amount-of-heat-in-my-room"
+                >چگونه مقدار حرارت در اتاق را محاسبه کنیم</a
+              >
+            </li>
+            <li class="reference">
+              Time constant -
+              <a href="https://en.wikipedia.org/wiki/Time_constant"
+                >تعریف ثابت زمانی</a
+              >
+            </li>
+          </ul>
+          <div class="tool-container">
+            <h3>نظرات شما</h3>
+            <textarea
+              id="feedbackText"
+              rows="4"
+              cols="50"
+              placeholder="نظر خود را بنویسید"
+            ></textarea
+            ><br />
+            <button onclick="submitFeedback()">ارسال</button>
+            <p id="feedbackResult"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="changeSlide(-1)">←</button>
+      <button class="nav-btn" onclick="changeSlide(1)">→</button>
+    </div>
+
+    <script>
+      let currentSlide = 0;
+      const slides = document.querySelectorAll(".slide");
+
+      // انیمیشن اولیه برای اسلاید اول
+      gsap.from(".slide.active h1", {
+        opacity: 0,
+        y: 100,
+        duration: 1.2,
+        ease: "expo.out",
+      });
+      gsap.from(".slide.active .animate-content", {
+        opacity: 0,
+        scale: 0.85,
+        duration: 1.5,
+        delay: 0.4,
+        ease: "back.out(1.7)",
+      });
+
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          if (i === index) {
+            slide.classList.add("active");
+            gsap.fromTo(
+              slide,
+              { opacity: 0, rotateY: 20, scale: 0.9, y: 150 },
+              {
+                opacity: 1,
+                rotateY: 0,
+                scale: 1,
+                y: 0,
+                duration: 1,
+                ease: "power4.out",
+              }
+            );
+            const elements = slide.querySelectorAll(
+              ".formula, table, .tool-container"
+            );
+            gsap.from(elements, {
+              opacity: 0,
+              y: 50,
+              stagger: 0.3,
+              duration: 0.8,
+              delay: 0.5,
+              ease: "elastic.out(1, 0.5)",
+            });
+          } else {
+            slide.classList.remove("active");
+            gsap.to(slide, {
+              opacity: 0,
+              rotateY: 20,
+              scale: 0.9,
+              duration: 0.6,
+              ease: "power2.in",
+            });
+          }
+        });
+      }
+
+      function changeSlide(direction) {
+        const newIndex =
+          (currentSlide + direction + slides.length) % slides.length;
+        if (newIndex !== currentSlide) {
+          currentSlide = newIndex;
+          showSlide(currentSlide);
+        }
+      }
+
+      // افکت پارالاکس
+      let parallaxItems = [];
+      function updateParallaxItems() {
+        parallaxItems = document.querySelectorAll(".parallax-item");
+      }
+
+      document.addEventListener("mousemove", (e) => {
+        parallaxItems.forEach((item) => {
+          const speed = 0.08;
+          const x = (window.innerWidth / 2 - e.clientX) * speed;
+          const y = (window.innerHeight / 2 - e.clientY) * speed;
+          item.style.transform = `translate(${x}px, ${y}px) rotate(${
+            x / 50
+          }deg)`;
+        });
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "PageDown") changeSlide(1);
+        if (e.key === "ArrowLeft" || e.key === "PageUp") changeSlide(-1);
+      });
+
+      // نمودار دما (Slide 1)
+      const ctx = document.getElementById("temperatureChart").getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["0", "10", "20", "30", "40", "47"],
+          datasets: [
+            {
+              label: "دما (°C)",
+              data: [5, 8, 12, 15, 18, 20],
+              borderColor: "#ff6b6b",
+              backgroundColor: "rgba(255, 107, 107, 0.2)",
+              fill: true,
+              tension: 0.4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: "rgba(78, 205, 196, 0.1)" },
+            },
+            x: { grid: { color: "rgba(78, 205, 196, 0.1)" } },
+          },
+          plugins: {
+            legend: { labels: { color: "#4ecdc4" } },
+          },
+        },
+      });
+
+      // ماشین‌حساب گرمایش (Slide 1)
+      function calculateHeatingTime() {
+        const initialTemp = parseFloat(
+          document.getElementById("initialTemp").value
+        );
+        const students = parseInt(document.getElementById("students").value);
+        const Qin = students * 100;
+        const H = 72.72;
+        const C = 579200;
+        const targetTemp = 20;
+        const time =
+          (Math.log((Qin / H - targetTemp) / (Qin / H - initialTemp)) * -C) /
+          H /
+          60;
+        document.getElementById(
+          "result"
+        ).innerText = `زمان لازم: ${time.toFixed(1)} دقیقه`;
+        gsap.from("#result", { opacity: 0, y: 20, duration: 0.5 });
+      }
+
+      // شبیه‌ساز دما با گذر زمان واقعی (Slide 2)
+      let t = 0;
+      let temp = 0;
+      const Qin = 4000;
+      const H = 72.72;
+      const C = 579200;
+      let simulationActive = false;
+
+      function startRealtimeSimulation() {
+        temp = parseFloat(document.getElementById("simInitialTemp").value);
+        t = 0;
+        simulationActive = true;
+        loop(); // شروع انیمیشن
+      }
+
+      function setup() {
+        let canvas = createCanvas(400, 200);
+        canvas.parent("tempSimulation");
+        noLoop(); // تا وقتی دکمه زده نشود، انیمیشن شروع نمی‌شود
+      }
+
+      function draw() {
+        if (!simulationActive) return;
+
+        background(20, 20, 20, 200);
+        temp = Qin / H + (temp - Qin / H) * Math.exp((-H * t) / C);
+        t += 0.01; // گام زمانی کوچک برای شبیه‌سازی واقعی‌تر
+
+        // رسم خط دما
+        stroke(255, 107, 107);
+        strokeWeight(2);
+        let x = map(t, 0, 60, 0, width);
+        let y = map(temp, 0, 25, height, 0);
+        line(x, height, x, y);
+
+        // رسم متن دما
+        textSize(16);
+        fill(78, 205, 196);
+        textAlign(LEFT, TOP);
+        text(`دما: ${temp.toFixed(1)} °C`, 10, 10);
+        text(`زمان: ${(t / 60).toFixed(2)} ساعت`, 10, 30);
+
+        // رسم خط هدف (20 درجه)
+        stroke(78, 205, 196, 150);
+        strokeWeight(1);
+        let targetY = map(20, 0, 25, height, 0);
+        line(0, targetY, width, targetY);
+
+        if (temp >= 20) {
+          simulationActive = false;
+          noLoop();
+        }
+      }
+
+      // مدل سه‌بعدی پیشرفته (Slide 3)
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 400 / 300, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setSize(400, 300);
+      document.getElementById("room3D").appendChild(renderer.domElement);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+      const pointLight = new THREE.PointLight(0xff6b6b, 1.5, 100);
+      pointLight.position.set(2, 2, 2);
+      scene.add(pointLight);
+
+      const wallMaterial = new THREE.MeshPhongMaterial({
+        color: 0x2c2c2c,
+        shininess: 50,
+      });
+      const floorMaterial = new THREE.MeshPhongMaterial({
+        color: 0x1a1a1a,
+        shininess: 30,
+      });
+
+      const floorGeometry = new THREE.PlaneGeometry(4, 3);
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
+
+      const wall1Geometry = new THREE.PlaneGeometry(4, 2);
+      const wall1 = new THREE.Mesh(wall1Geometry, wallMaterial);
+      wall1.position.set(0, 1, -1.5);
+      scene.add(wall1);
+
+      const wall2Geometry = new THREE.PlaneGeometry(4, 2);
+      const wall2 = new THREE.Mesh(wall2Geometry, wallMaterial);
+      wall2.position.set(0, 1, 1.5);
+      wall2.rotation.y = Math.PI;
+      scene.add(wall2);
+
+      const wall3Geometry = new THREE.PlaneGeometry(3, 2);
+      const wall3 = new THREE.Mesh(wall3Geometry, wallMaterial);
+      wall3.position.set(-2, 1, 0);
+      wall3.rotation.y = Math.PI / 2;
+      scene.add(wall3);
+
+      const wall4Geometry = new THREE.PlaneGeometry(3, 2);
+      const wall4 = new THREE.Mesh(wall4Geometry, wallMaterial);
+      wall4.position.set(2, 1, 0);
+      wall4.rotation.y = -Math.PI / 2;
+      scene.add(wall4);
+
+      const particlesGeometry = new THREE.BufferGeometry();
+      const particlesCount = 150;
+      const posArray = new Float32Array(particlesCount * 3);
+      for (let i = 0; i < particlesCount * 3; i += 3) {
+        posArray[i] = (Math.random() - 0.5) * 4;
+        posArray[i + 1] = Math.random() * 2;
+        posArray[i + 2] = (Math.random() - 0.5) * 3;
+      }
+      particlesGeometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(posArray, 3)
+      );
+      const particlesMaterial = new THREE.PointsMaterial({
+        size: 0.06,
+        color: 0xff6b6b,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+      });
+      const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+      scene.add(particles);
+
+      camera.position.set(3, 2, 5);
+      camera.lookAt(0, 1, 0);
+
+      let temp3D = 5;
+      let t3D = 0;
+
+      function animate3D() {
+        requestAnimationFrame(animate3D);
+        t3D += 0.1;
+        temp3D = Qin / H + (5 - Qin / H) * Math.exp((-H * t3D) / C);
+
+        if (temp3D <= 20) {
+          const hue = temp3D / 60;
+          wallMaterial.color.setHSL(hue, 0.8, 0.5);
+          particlesMaterial.color.setHSL(hue, 1, 0.6);
+          pointLight.color.setHSL(hue, 1, 0.5);
+        }
+
+        const positions = particles.geometry.attributes.position.array;
+        for (let i = 1; i < positions.length; i += 3) {
+          positions[i] += Math.random() * 0.02;
+          if (positions[i] > 2) positions[i] = 0;
+        }
+        particles.geometry.attributes.position.needsUpdate = true;
+
+        particles.rotation.y += 0.001;
+        renderer.render(scene, camera);
+      }
+      animate3D();
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.update();
+
+      // تنظیم پارامترها (Slide 8)
+      function updateParams() {
+        const H = parseFloat(document.getElementById("H").value);
+        const C = parseFloat(document.getElementById("C").value);
+        const Qin = 4000;
+        const initialTemp = 5;
+        const targetTemp = 20;
+        const time =
+          (Math.log((Qin / H - targetTemp) / (Qin / H - initialTemp)) * -C) /
+          H /
+          60;
+        document.getElementById(
+          "paramResult"
+        ).innerText = `زمان لازم: ${time.toFixed(1)} دقیقه`;
+        gsap.from("#paramResult", { opacity: 0, y: 20, duration: 0.5 });
+      }
+
+      // سیستم بازخورد (Slide 15)
+      function submitFeedback() {
+        const feedback = document.getElementById("feedbackText").value;
+        if (feedback) {
+          document.getElementById("feedbackResult").innerText =
+            "نظر شما ثبت شد: " + feedback;
+          document.getElementById("feedbackText").value = "";
+          gsap.from("#feedbackResult", { opacity: 0, y: 20, duration: 0.5 });
+        } else {
+          document.getElementById("feedbackResult").innerText =
+            "لطفاً نظر خود را بنویسید!";
+          gsap.from("#feedbackResult", { opacity: 0, y: 20, duration: 0.5 });
+        }
+      }
+
+      // تنظیم اولیه
+      updateParallaxItems();
+      showSlide(currentSlide);
+    </script>
+
+    <!-- Elfsight AI Chatbot -->
+    <script
+      src="https://static.elfsight.com/platform/platform.js"
+      async
+    ></script>
+    <div
+      class="elfsight-app-060336a6-8e76-4bb1-8068-872f0d975c49"
+      data-elfsight-app-lazy
+    ></div>
+  </body>
+</html>
